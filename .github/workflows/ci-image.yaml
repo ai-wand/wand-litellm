@@ -1,0 +1,26 @@
+name: 'Build & Deploy (all)'
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+concurrency: cicd
+
+jobs:
+  build-and-publish:
+    name: 'Build and Publish App Images'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: 'Build and Publish Docker Image'
+        uses: ai-wand/Infra/workflows/build-and-publish-docker-image@main
+        with:
+          acrpassword: ${{ secrets.WAND_SERVICE_PLATFORM_ACR_PASSWORD }}
+          dockerfile: Dockerfile
+          app-image: litellm:${{ github.sha }}
+          docker-build-args: |
+            SERVICE_NAME=litellm
+            COMMIT_HASH=${{ github.sha }}
+          docker-secrets: |
+            GITHUB_TOKEN=${{ secrets.WAND_REPO_TOKEN }}
